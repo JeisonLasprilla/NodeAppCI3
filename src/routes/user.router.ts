@@ -1,29 +1,30 @@
-import express, {Request, Response} from "express";
-import UserController from "../controllers/user.controller";
-import validateSchema from "../middlewares/validateSchema";
-import userSchema from "../schemas/user.schema";
-import userController from "../controllers/user.controller";
-import auth from "../middlewares/auth"
+// src/routes/user.router.ts
+import express from 'express';
+import UserController from '../controllers/user.controller';
+import authMiddleware from '../middlewares/auth';
+import validateSchema from '../middlewares/validateSchema';
+import userSchema from '../schemas/user.schema';
 
-export const router = express.Router();
+const router = express.Router();
 
+// Rutas públicas
+router.post('/login', UserController.login);
 
-router.get("/profile", auth, UserController.getUser);
+// Rutas protegidas
+router.use(authMiddleware);
 
-router.post("/", validateSchema(userSchema), userController.create);
+// Ruta para obtener todos los usuarios (solo para usuarios autenticados)
+router.get('/', UserController.getAll);
 
-router.post("/", UserController.create);
+// Ruta para obtener el perfil del usuario autenticado
+router.get('/profile', UserController.getUser);
 
-router.get("/", UserController.getAll);
+// Rutas que requieren ser superadmin
+router.post('/', authMiddleware.isSuperAdmin, validateSchema(userSchema), UserController.create);
+router.put('/:id', authMiddleware.isSuperAdmin, validateSchema(userSchema), UserController.update);
+router.delete('/:id', authMiddleware.isSuperAdmin, UserController.delete);
 
-router.get("/:id/group/:groupid", (req: Request, res: Response) =>{
-    res.send(`get user with id ${req.params.id} y group ID: ${req.params.groupid}`);
-});
+// Ruta para obtener un usuario específico (accesible para todos los usuarios autenticados)
+router.get('/:id', UserController.getUser);
 
-router.get("/:id", UserController.getUser);
-
-router.put("/:id", UserController.update);
-
-router.delete("/:id", UserController.delete);
-
-router.post("/login", UserController.login);
+export default router;

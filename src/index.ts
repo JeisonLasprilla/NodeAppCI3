@@ -1,26 +1,27 @@
-import express, {Express, Request, Response} from 'express';
+// src/index.ts
+import express from 'express';
+import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import {router} from './routes/user.router';
-import {db} from './config/db'
-
-const app: Express = express ();
+import userRoutes from './routes/user.router';
+import commentRoutes from './routes/comment.router';
+import auth from './middlewares/auth';
 
 dotenv.config();
 
+const app = express();
 const PORT = process.env.PORT || 3000;
 
+app.use(express.json());
 
-app.use (express. json()) ;
-app.use(express.urlencoded ({extended: true})) ;
+// Conexión a MongoDB
+mongoose.connect(process.env.MONGODB_URI as string)
+  .then(() => console.log('Conectado a MongoDB'))
+  .catch((error) => console.error('Error de conexión a MongoDB:', error));
 
-app.use('/api/users', router);
+// Rutas
+app.use('/api/users', userRoutes);
+app.use('/api/comments', commentRoutes);
 
-app.get ('/', (req: Request, res: Response) =>{
-    res.send ('Hello World');
+app.listen(PORT, () => {
+  console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
-
-db.then(()=>
-    app.listen (PORT, () => {
-        console.log (`Server running on http://localhost:${PORT}`);
-    })
-);
