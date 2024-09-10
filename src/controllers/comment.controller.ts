@@ -1,6 +1,6 @@
 // src/controllers/comment.controller.ts
 import { Request, Response } from 'express';
-import Comment from '../models/comment';
+import Comment from '../models/comment.module';
 import mongoose from 'mongoose';
 
 const CommentController = {
