@@ -1,6 +1,7 @@
 // src/controllers/comment.controller.ts
 import { Request, Response } from 'express';
 import Comment from '../models/comment';
+import mongoose from 'mongoose';
 
 const CommentController = {
   async getAll(req: Request, res: Response) {
@@ -99,7 +100,7 @@ const CommentController = {
         return res.status(404).json({ message: "Comment not found" });
       }
       const existingReaction = comment.reactions.find(
-        r => r.user.toString() === req.body.loggedUser.user_id
+        (r: { user: mongoose.Types.ObjectId; type: string }) => r.user.toString() === req.body.loggedUser.user_id
       );
       if (existingReaction) {
         existingReaction.type = type;
@@ -120,7 +121,7 @@ const CommentController = {
         return res.status(404).json({ message: "Comment not found" });
       }
       comment.reactions = comment.reactions.filter(
-        r => r.user.toString() !== req.body.loggedUser.user_id
+        (r: { user: mongoose.Types.ObjectId }) => r.user.toString() !== req.body.loggedUser.user_id
       );
       await comment.save();
       res.json(comment);
