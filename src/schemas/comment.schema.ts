@@ -1,4 +1,3 @@
-// src/schemas/comment.schema.ts
 import { z } from 'zod';
 
 const commentSchema = z.object({

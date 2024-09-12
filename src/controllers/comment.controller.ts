@@ -17,7 +17,7 @@ const CommentController = {
       const { content, parentComment } = req.body;
       const comment = new Comment({
         content,
-        author: req.body.loggedUser.user_id,
+        author: "jeison", //req.body.loggedUser.user_id,
         parentComment
       });
       await comment.save();
