@@ -5,7 +5,7 @@ import auth from '../middlewares/auth';
 import validateSchema from '../middlewares/validateSchema';
 import commentSchema from '../schemas/comment.schema';
 
-const router = express.Router();
+export const comment_router = express.Router();
 
 // Todas las rutas de comentarios requieren autenticación
 router.use(auth);
@@ -27,5 +27,3 @@ router.post('/:id/reply', validateSchema(commentSchema), CommentController.reply
 // Reaccionar a un comentario
 router.post('/:id/react', CommentController.react);
 router.delete('/:id/react', CommentController.removeReaction);
-
-export default router;

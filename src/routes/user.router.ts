@@ -5,7 +5,7 @@ import authMiddleware from '../middlewares/auth';
 import validateSchema from '../middlewares/validateSchema';
 import userSchema from '../schemas/user.schema';
 
-export const router = express.Router();
+export const user_router = express.Router();
 
 // Rutas públicas
 router.post('/login', UserController.login);

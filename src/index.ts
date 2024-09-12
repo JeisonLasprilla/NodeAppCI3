@@ -2,8 +2,8 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import userRoutes from './routes/user.router';
-import commentRoutes from './routes/comment.router';
+import {user_router} from './routes/user.router';
+import {comment_router} from './routes/comment.router';
 import auth from './middlewares/auth';
 
 dotenv.config();
@@ -19,8 +19,8 @@ mongoose.connect(process.env.MONGODB_URI as string)
   .catch((error) => console.error('Error de conexión a MongoDB:', error));
 
 // Rutas
-app.use('/api/users', userRoutes);
-app.use('/api/comments', commentRoutes);
+app.use('/api/users', user_router);
+app.use('/api/comments', comment_router);
 
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
