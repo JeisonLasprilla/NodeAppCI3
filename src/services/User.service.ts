@@ -1,7 +1,5 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
-
-import { promises } from "dns";
 import User, { UserDocument, UserInput } from "../models/user.module";
 import UserModel from "../models/user.module";
 import UserExistError from "../exceptions/UserExistError";
