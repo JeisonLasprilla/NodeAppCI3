@@ -1,42 +1,39 @@
-import CommentModel, { IComment } from "../models/comment.module";
+import Comment, { CommentDocument, CommentInput } from "../models/comment.module";
 import mongoose from 'mongoose';
 
 class CommentService {
-  public async create(commentInput: Partial<IComment>): Promise<IComment> {
+  public async create(commentInput: CommentInput): Promise<CommentDocument> {
     try {
-      const comment = new CommentModel(commentInput);
-      await comment.save();
-      return comment;
+      const comment = new Comment(commentInput);
+      return await comment.save();
     } catch (error) {
       throw error;
     }
   }
 
-  public async findById(id: string): Promise<IComment | null> {
+  public async findById(id: string): Promise<CommentDocument | null> {
     try {
-      return await CommentModel.findById(id).populate('author').populate('parentComment');
+      return await Comment.findById(id).populate('author').populate('parentComment');
     } catch (error) {
       throw error;
     }
   }
 
-  public async findAll(): Promise<IComment[]> {
+  public async findAll(): Promise<CommentDocument[]> {
     try {
-      const comments = await CommentModel.find().populate('author').populate('parentComment');
+      const comments = await Comment.find().populate('author').populate('parentComment');
       if (comments.length === 0) {
-        throw new Error('404: No comments found');
+        throw new Error('No comments found');
       }
       return comments;
     } catch (error) {
-        throw new Error('404 Not Found');
+      throw error;
     }
   }
-  
-  
 
-  public async addReaction(commentId: string, reaction: { type: 'like' | 'love' | 'disagree', user: mongoose.Types.ObjectId }): Promise<IComment | null> {
+  public async addReaction(commentId: string, reaction: { type: 'like' | 'love' | 'disagree', user: mongoose.Types.ObjectId }): Promise<CommentDocument | null> {
     try {
-      return await CommentModel.findByIdAndUpdate(
+      return await Comment.findByIdAndUpdate(
         commentId,
         { $push: { reactions: reaction } },
         { new: true }
