@@ -18,7 +18,7 @@ mongoose.connect(process.env.MONGODB_URI as string)
   .catch((error) => console.error('Error de conexión a MongoDB:', error));
 
 // Rutas
-app.use('/api/users', user_router);
+app.use('/api/comments', user_router);
 app.use('/api/comments', comment_router);
 
 app.listen(PORT, () => {

@@ -1,133 +1,78 @@
-import { Request, Response } from 'express';
-import Comment from '../models/comment.module';
+import { Request, Response } from "express";
+import Comment, { CommentDocument, CommentInput } from "../models/comment.module";
+import { CommentSchema, CommentInputZod } from "../schemas/comment.schema";
 import mongoose from 'mongoose';
+import { ZodError } from "zod";
 
-const CommentController = {
-  async getAll(req: Request, res: Response) {
+class CommentController {
+  public async create(req: Request, res: Response) {
     try {
-      const comments = await Comment.find().populate('author', 'name');
-      res.json(comments);
-    } catch (error) {
-      res.status(500).json({ message: "Error fetching comments", error });
-    }
-  },
-
-  async create(req: Request, res: Response) {
-    try {
-      const { content, parentComment } = req.body;
-      const comment = new Comment({
-        content,
-        author: "jeison", //req.body.loggedUser.user_id,
-        parentComment
+      const commentInput: CommentInputZod = CommentSchema.parse(req.body);
+      const comment: CommentDocument = await Comment.create({
+        ...commentInput,
+        author: new mongoose.Types.ObjectId(commentInput.author),
+        parentComment: commentInput.parentComment ? new mongoose.Types.ObjectId(commentInput.parentComment) : undefined,
+        reactions: commentInput.reactions?.map(r => ({
+          ...r,
+          user: new mongoose.Types.ObjectId(r.user)
+        }))
       });
-      await comment.save();
       res.status(201).json(comment);
     } catch (error) {
-      res.status(400).json({ message: "Error creating comment", error });
-    }
-  },
-
-  async getComment(req: Request, res: Response) {
-    try {
-      const comment = await Comment.findById(req.params.id).populate('author', 'name');
-      if (!comment) {
-        return res.status(404).json({ message: "Comment not found" });
+      if (error instanceof ZodError) {
+        return res.status(400).json({ message: "Invalid input", errors: error.errors });
       }
-      res.json(comment);
-    } catch (error) {
-      res.status(500).json({ message: "Error fetching comment", error });
-    }
-  },
-
-  async update(req: Request, res: Response) {
-    try {
-      const comment = await Comment.findById(req.params.id);
-      if (!comment) {
-        return res.status(404).json({ message: "Comment not found" });
-      }
-      if (comment.author.toString() !== req.body.loggedUser.user_id) {
-        return res.status(403).json({ message: "Not authorized to update this comment" });
-      }
-      comment.content = req.body.content;
-      await comment.save();
-      res.json(comment);
-    } catch (error) {
-      res.status(400).json({ message: "Error updating comment", error });
-    }
-  },
-
-  async delete(req: Request, res: Response) {
-    try {
-      const comment = await Comment.findById(req.params.id);
-      if (!comment) {
-        return res.status(404).json({ message: "Comment not found" });
-      }
-      if (comment.author.toString() !== req.body.loggedUser.user_id) {
-        return res.status(403).json({ message: "Not authorized to delete this comment" });
-      }
-      await comment.deleteOne();
-      res.json({ message: "Comment deleted successfully" });
-    } catch (error) {
-      res.status(500).json({ message: "Error deleting comment", error });
-    }
-  },
-
-  async reply(req: Request, res: Response) {
-    try {
-      const { content } = req.body;
-      const parentComment = await Comment.findById(req.params.id);
-      if (!parentComment) {
-        return res.status(404).json({ message: "Parent comment not found" });
-      }
-      const reply = new Comment({
-        content,
-        author: req.body.loggedUser.user_id,
-        parentComment: parentComment._id
-      });
-      await reply.save();
-      res.status(201).json(reply);
-    } catch (error) {
-      res.status(400).json({ message: "Error creating reply", error });
-    }
-  },
-
-  async react(req: Request, res: Response) {
-    try {
-      const { type } = req.body;
-      const comment = await Comment.findById(req.params.id);
-      if (!comment) {
-        return res.status(404).json({ message: "Comment not found" });
-      }
-      const existingReaction = comment.reactions.find(
-        (r: { user: mongoose.Types.ObjectId; type: string }) => r.user.toString() === req.body.loggedUser.user_id
-      );
-      if (existingReaction) {
-        existingReaction.type = type;
-      } else {
-        comment.reactions.push({ type, user: req.body.loggedUser.user_id });
-      }
-      await comment.save();
-      res.json(comment);
-    } catch (error) {
-      res.status(400).json({ message: "Error reacting to comment", error });
-    }
-  },
-
-  async removeReaction(req: Request, res: Response) {
-    try {
-      const comment = await Comment.findById(req.params.id);
-      if (!comment) {
-        return res.status(404).json({ message: "Comment not found" });
-      }
-      comment.reactions = comment.reactions.filter(
-        (r: { user: mongoose.Types.ObjectId }) => r.user.toString() !== req.body.loggedUser.user_id
-      );
-      await comment.save();
-      res.json(comment);
-    } catch (error) {
-      res.status(400).json({ message: "Error removing reaction", error });
+      console.error("Error creating comment:", error);
+      res.status(500).json({ message: "Error creating comment", error: error });
     }
   }
-};
 
-export default CommentController;
+  public async getComment(req: Request, res: Response) {
+    try {
+      const comment: CommentDocument | null = await Comment.findById(req.params.id);
+      if (!comment) {
+        return res.status(404).json({
+          error: "not found",
+          message: `Comment with id ${req.params.id} not found`,
+        });
+      }
+      res.json(comment);
+    } catch (error) {
+      console.error("Error fetching comment:", error);
+      res.status(500).json({ message: "Error fetching comment", error: error });
+    }
+  }
+
+  public async getAllComments(req: Request, res: Response) {
+    try {
+      const comments: CommentDocument[] = await Comment.find();
+      res.json(comments);
+    } catch (error) {
+      console.error("Error fetching all comments:", error);
+      res.status(500).json({ message: "Error fetching all comments", error: error });
+    }
+  }
+
+  public async addReaction(req: Request, res: Response) {
+    try {
+      const { commentId } = req.params;
+      const { type, user } = req.body;
+      const updatedComment = await Comment.findByIdAndUpdate(
+        commentId,
+        { $push: { reactions: { type, user } } },
+        { new: true }
+      );
+      if (!updatedComment) {
+        return res.status(404).json({ message: "Comment not found" });
+      }
+      res.json(updatedComment);
+    } catch (error) {
+      console.error("Error adding reaction:", error);
+      res.status(500).json({ message: "Error adding reaction", error: error });
+    }
+  }
+
+  // Otros métodos como update, delete, etc.
+}
+
+export default new CommentController();
