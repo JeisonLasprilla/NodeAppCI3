@@ -1,22 +1,17 @@
 import { Request, Response } from "express";
-import Comment, { CommentDocument, CommentInput } from "../models/comment.module";
 import { CommentSchema, CommentInputZod } from "../schemas/comment.schema";
-import mongoose from 'mongoose';
 import { ZodError } from "zod";
+import CommentService from "../services/Comment.service";
 
 class CommentController {
   public async create(req: Request, res: Response) {
     try {
-      const commentInput: CommentInputZod = CommentSchema.parse(req.body);
-      const comment: CommentDocument = await Comment.create({
-        ...commentInput,
-        author: new mongoose.Types.ObjectId(commentInput.author),
-        parentComment: commentInput.parentComment ? new mongoose.Types.ObjectId(commentInput.parentComment) : undefined,
-        reactions: commentInput.reactions?.map(r => ({
-          ...r,
-          user: new mongoose.Types.ObjectId(r.user)
-        }))
+      const commentInput: CommentInputZod = CommentSchema.parse({
+        ...req.body,
+        author: req.user!.user_id, // Asumiendo que el usuario autenticado es el autor
+        reactions: [] // Inicializamos las reacciones como un array vacío
       });
+      const comment = await CommentService.create(commentInput);
       res.status(201).json(comment);
     } catch (error) {
       if (error instanceof ZodError) {
@@ -29,7 +24,7 @@ class CommentController {
 
   public async getComment(req: Request, res: Response) {
     try {
-      const comment: CommentDocument | null = await Comment.findById(req.params.id);
+      const comment = await CommentService.findById(req.params.id);
       if (!comment) {
         return res.status(404).json({
           error: "not found",
@@ -45,7 +40,7 @@ class CommentController {
 
   public async getAllComments(req: Request, res: Response) {
     try {
-      const comments: CommentDocument[] = await Comment.find();
+      const comments = await CommentService.findAll();
       res.json(comments);
     } catch (error) {
       console.error("Error fetching all comments:", error);
@@ -53,15 +48,44 @@ class CommentController {
     }
   }
 
+  public async updateComment(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const commentInput = CommentSchema.partial().parse(req.body);
+      const updatedComment = await CommentService.update(id, commentInput);
+      if (!updatedComment) {
+        return res.status(404).json({ message: "Comment not found" });
+      }
+      res.json(updatedComment);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({ message: "Invalid input", errors: error.errors });
+      }
+      console.error("Error updating comment:", error);
+      res.status(500).json({ message: "Error updating comment", error: error });
+    }
+  }
+
+  public async deleteComment(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const deletedComment = await CommentService.delete(id);
+      if (!deletedComment) {
+        return res.status(404).json({ message: "Comment not found" });
+      }
+      res.json({ message: "Comment deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+      res.status(500).json({ message: "Error deleting comment", error: error });
+    }
+  }
+
   public async addReaction(req: Request, res: Response) {
     try {
       const { commentId } = req.params;
-      const { type, user } = req.body;
-      const updatedComment = await Comment.findByIdAndUpdate(
-        commentId,
-        { $push: { reactions: { type, user } } },
-        { new: true }
-      );
+      const { type } = req.body;
+      const userId = req.user!.user_id;
+      const updatedComment = await CommentService.addReaction(commentId, { type, user: userId });
       if (!updatedComment) {
         return res.status(404).json({ message: "Comment not found" });
       }
@@ -72,7 +96,21 @@ class CommentController {
     }
   }
 
-  // Otros métodos como update, delete, etc.
+  public async removeReaction(req: Request, res: Response) {
+    try {
+      const { commentId } = req.params;
+      const userId = req.user!.user_id;
+      const updatedComment = await CommentService.removeReaction(commentId, userId);
+      if (!updatedComment) {
+        return res.status(404).json({ message: "Comment not found" });
+      }
+      res.json(updatedComment);
+    } catch (error) {
+      console.error("Error removing reaction:", error);
+      res.status(500).json({ message: "Error removing reaction", error: error });
+    }
+  }
+
 }
 
 export default new CommentController();

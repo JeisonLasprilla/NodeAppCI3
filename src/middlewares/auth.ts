@@ -6,6 +6,14 @@ interface DecodedToken {
   role: 'superadmin' | 'regular';
 }
 
+declare global {
+  namespace Express {
+    interface Request {
+      user?: DecodedToken;
+    }
+  }
+}
+
 const auth = async (req: Request, res: Response, next: NextFunction) => {
   try {
     let token: string | undefined = req.headers.authorization;
@@ -14,8 +22,7 @@ const auth = async (req: Request, res: Response, next: NextFunction) => {
     }
     token = token.replace("Bearer ", "");
     const decoded = jwt.verify(token, process.env.JWT_SECRET || "secret") as DecodedToken;
-    req.body.loggedUser = decoded;
-    req.params.id = decoded.user_id;
+    req.user = decoded;
     next();
   } catch (error) {
     if (error instanceof TokenExpiredError)
@@ -26,7 +33,7 @@ const auth = async (req: Request, res: Response, next: NextFunction) => {
 };
 
 auth.isSuperAdmin = (req: Request, res: Response, next: NextFunction) => {
-  if (req.body.loggedUser && req.body.loggedUser.role === 'superadmin') {
+  if (req.user && req.user.role === "superadmin") {
     next();
   } else {
     res.status(403).json({ message: "Access denied. Superadmin role required." });

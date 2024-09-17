@@ -72,13 +72,13 @@ class userController {
   public async login(req: Request, res: Response) {
     try {
       const userObj = await UserService.login(req.body);
-      res.status(201).json(userObj);
+      res.status(200).json(userObj);
     } catch (error) {
       if (error instanceof NotAuthorizedError) {
-        res.status(400).json({ messge: "user already exists" });
+        res.status(401).json({ message: "Invalid credentials" });  // Changed message and status code
         return;
       }
-      res.status(501).json(error);
+      res.status(500).json({ message: "Internal server error" });  // Changed to 500 for unexpected errors
     }
   }
 }
