@@ -13,10 +13,10 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 
 //debug
-console.log('MONGODB_URI:', process.env.MONGODB_URI);
+const URI = process.env.MONGODB_URI as string;
 
 // Conexión a MongoDB
-mongoose.connect(process.env.MONGODB_URI as string)
+mongoose.connect(URI)
   .then(() => console.log('Conectado a MongoDB'))
   .catch((error) => console.error('Error de conexión a MongoDB:', error));
 
