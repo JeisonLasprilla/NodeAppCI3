@@ -17,9 +17,15 @@ declare global {
 const auth = async (req: Request, res: Response, next: NextFunction) => {
   try {
     let token: string | undefined = req.headers.authorization;
+
     if (!token) {
       return res.status(401).json({ message: "Not Authorized" });
     }
+
+    if (!token.startsWith('Bearer ')) {
+      return res.status(401).json({ message: "Invalid token format" });
+    }
+
     token = token.replace("Bearer ", "");
     const decoded = jwt.verify(token, process.env.JWT_SECRET || "secret") as DecodedToken;
     req.user = decoded;

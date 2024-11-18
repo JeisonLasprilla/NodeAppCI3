@@ -35,7 +35,15 @@ class UserService {
 
       if (!isMatch) throw new NotAuthorizedError("Not authorized");
 
-      const token = this.generateToken(userExist);
+      const token = jwt.sign(
+        { 
+          user_id: userExist._id, 
+          email: userExist.email,
+          role: userExist.role 
+        },
+        process.env.JWT_SECRET || "secret",
+        { expiresIn: "1h" }
+      );
 
       return { email: userExist.email, name: userExist.name, token };
     } catch (error) {
