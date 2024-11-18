@@ -2,11 +2,14 @@
   "name": "myapp",
   "version": "1.0.0",
   "main": "dist/index.js",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "tsc --watch & nodemon dist/index.js",
     "build": "tsc",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "postinstall": "tsc"
   },
   "author": "leobusta",
   "license": "ISC",
@@ -31,6 +34,6 @@
     "@types/node": "^22.5.5",
     "nodemon": "^3.1.4",
     "ts-node": "^10.9.2",
-    "typescript": "^5.6.3"
+    "typescript": "^5.5.4"
   }
 }
