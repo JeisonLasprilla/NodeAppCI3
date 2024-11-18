@@ -4,8 +4,8 @@
   "main": "dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "tsc && nodemon dist/index.js --trace-warnings",
-    "build": "npm install --production=false && tsc",
+    "dev": "tsc --watch & nodemon dist/index.js",
+    "build": "tsc",
     "start": "node dist/index.js"
   },
   "author": "leobusta",
