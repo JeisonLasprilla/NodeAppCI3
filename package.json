@@ -3,19 +3,19 @@
   "version": "1.0.0",
   "main": "dist/index.js",
   "engines": {
-    "node": ">=20.0.0"
+    "node": "20.x"
   },
   "scripts": {
-    "dev": "tsc --watch & nodemon dist/index.js",
     "build": "tsc",
     "start": "node dist/index.js",
-    "postinstall": "tsc"
+    "dev": "tsc --watch & nodemon dist/index.js"
   },
-  "author": "leobusta",
-  "license": "ISC",
-  "description": "",
   "dependencies": {
     "@apollo/server": "^4.11.2",
+    "@types/bcrypt": "^5.0.2",
+    "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/node": "^22.5.5",
     "bcrypt": "^5.1.1",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
@@ -24,16 +24,7 @@
     "mongodb": "^6.8.0",
     "mongoose": "^8.5.2",
     "myapp": "file:",
+    "typescript": "^5.5.4",
     "zod": "^3.23.8"
-  },
-  "devDependencies": {
-    "@types/bcrypt": "^5.0.2",
-    "@types/express": "^4.17.21",
-    "@types/jsonwebtoken": "^9.0.7",
-    "@types/mongoose": "^5.11.97",
-    "@types/node": "^22.5.5",
-    "nodemon": "^3.1.4",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.5.4"
   }
 }
