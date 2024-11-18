@@ -73,7 +73,12 @@ class UserService {
   private generateToken(user: UserDocument): string {
     try {
       return jwt.sign(
-        { user_id: user.id, emamil: user.email, name: user.name },
+        { 
+          user_id: user.id, 
+          email: user.email, 
+          name: user.name,
+          role: user.role 
+        },
         process.env.JWT_SECRET || "secret",
         { expiresIn: "5m" }
       );

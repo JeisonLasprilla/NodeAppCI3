@@ -1,9 +1,8 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import {user_router} from './routes/user.router';
-import {comment_router} from './routes/comment.router';
-import auth from './middlewares/auth';
+import { user_router } from './routes/user.router';
+import { comment_router } from './routes/comment.router';
 
 dotenv.config();
 
@@ -21,6 +20,7 @@ mongoose.connect(process.env.MONGODB_URL as string)
 app.use('/api/users', user_router);
 app.use('/api/comments', comment_router);
 
+// Iniciar el servidor
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
