@@ -1,9 +1,8 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import User, { UserDocument, UserInput } from "../models/user.module";
-import UserModel from "../models/user.module";
 import UserExistError from "../exceptions/UserExistError";
-import { NotAuthorizedError } from "../exceptions";
+import NotAuthorizedError from "../exceptions/NotAuthorizedError";
 
 class UserService {
   public async create(UserInput: UserInput): Promise<UserDocument> {
@@ -13,7 +12,7 @@ class UserService {
       if (userExist) throw new UserExistError("user already exists");
       UserInput.password = await bcrypt.hash(UserInput.password, 10);
 
-      const user = UserModel.create(UserInput);
+      const user = User.create(UserInput);
       return user;
     } catch (error) {
       throw error;
@@ -53,7 +52,7 @@ class UserService {
 
   public async findAll(): Promise<UserDocument[]> {
     try {
-      const users = await UserModel.find();
+      const users = await User.find();
       return users;
     } catch (error) {
       throw error;
@@ -62,7 +61,7 @@ class UserService {
 
   public async findById(id: string): Promise<UserDocument | null> {
     try {
-      const users = await UserModel.findById(id);
+      const users = await User.findById(id);
       return users;
     } catch (error) {
       throw error;
@@ -71,7 +70,7 @@ class UserService {
 
   public async findByEmail(email: string): Promise<UserDocument | null> {
     try {
-      const user: UserDocument | null = await UserModel.findOne({ email });
+      const user: UserDocument | null = await User.findOne({ email });
       return user;
     } catch (error) {
       throw error;
@@ -100,7 +99,7 @@ class UserService {
     userInput: UserInput
   ): Promise<UserDocument | null> {
     try {
-      const users = await UserModel.findByIdAndUpdate(id, userInput, {
+      const users = await User.findByIdAndUpdate(id, userInput, {
         returnOriginal: false,
       });
       return users;

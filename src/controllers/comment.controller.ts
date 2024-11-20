@@ -69,7 +69,8 @@ class CommentController {
   public async deleteComment(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const deletedComment = await CommentService.delete(id);
+      const userId = req.user!.user_id;
+      const deletedComment = await CommentService.delete(id, userId);
       if (!deletedComment) {
         return res.status(404).json({ message: "Comment not found" });
       }

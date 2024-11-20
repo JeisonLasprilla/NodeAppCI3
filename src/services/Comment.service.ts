@@ -1,19 +1,22 @@
-import Comment, { CommentDocument, CommentInput } from "../models/comment.module";
-import mongoose from "mongoose";
+import Comment, { IComment } from '../models/Comment';
+import mongoose from 'mongoose';
+
+interface CommentInput {
+  content: string;
+  author: string;
+  parentComment?: string | null;
+}
 
 class CommentService {
-  public async create(commentInput: CommentInput): Promise<CommentDocument> {
+  public async create(commentInput: CommentInput): Promise<IComment> {
     try {
       const comment = await Comment.create({
-        ...commentInput,
+        content: commentInput.content,
         author: new mongoose.Types.ObjectId(commentInput.author),
-        parentComment: commentInput.parentComment
+        parentComment: commentInput.parentComment 
           ? new mongoose.Types.ObjectId(commentInput.parentComment)
-          : undefined,
-        reactions: commentInput.reactions?.map((r) => ({
-          ...r,
-          user: new mongoose.Types.ObjectId(r.user),
-        })),
+          : null,
+        reactions: []
       });
       return comment;
     } catch (error) {
@@ -21,7 +24,7 @@ class CommentService {
     }
   }
 
-  public async findById(id: string): Promise<CommentDocument | null> {
+  public async findById(id: string): Promise<IComment | null> {
     try {
       return await Comment.findById(id).populate('author').populate('parentComment');
     } catch (error) {
@@ -29,7 +32,7 @@ class CommentService {
     }
   }
 
-  public async findAll(): Promise<CommentDocument[]> {
+  public async findAll(): Promise<IComment[]> {
     try {
       return await Comment.find().populate('author').populate('parentComment');
     } catch (error) {
@@ -37,7 +40,7 @@ class CommentService {
     }
   }
 
-  public async update(id: string, commentInput: Partial<CommentInput>): Promise<CommentDocument | null> {
+  public async update(id: string, commentInput: Partial<CommentInput>): Promise<IComment | null> {
     try {
       const updateData = {
         ...commentInput,
@@ -53,7 +56,7 @@ class CommentService {
     }
   }
 
-  public async delete(id: string): Promise<CommentDocument | null> {
+  public async delete(id: string, userId: string): Promise<IComment | null> {
     try {
       return await Comment.findByIdAndDelete(id);
     } catch (error) {
@@ -61,7 +64,7 @@ class CommentService {
     }
   }
 
-  public async addReaction(commentId: string, reaction: { type: 'like' | 'love' | 'disagree', user: string }): Promise<CommentDocument | null> {
+  public async addReaction(commentId: string, reaction: { type: 'like' | 'love' | 'disagree', user: string }): Promise<IComment | null> {
     try {
       return await Comment.findByIdAndUpdate(
         commentId,
@@ -73,7 +76,7 @@ class CommentService {
     }
   }
 
-  public async removeReaction(commentId: string, userId: string): Promise<CommentDocument | null> {
+  public async removeReaction(commentId: string, userId: string): Promise<IComment | null> {
     try {
       return await Comment.findByIdAndUpdate(
         commentId,
@@ -83,6 +86,10 @@ class CommentService {
     } catch (error) {
       throw error;
     }
+  }
+
+  async findByUser(userId: string) {
+    return await Comment.find({ userId });
   }
 }
 

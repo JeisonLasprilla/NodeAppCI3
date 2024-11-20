@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
 import UserService from "../services/User.service";
 import { UserDocument, UserInput } from "../models/user.module";
-import { userExistsError, NotAuthorizedError } from "../exceptions";
+import NotAuthorizedError from "../exceptions/NotAuthorizedError";
+import userExistsError from "../exceptions/UserExistError";
 
 class userController {
   public async create(req: Request, res: Response) {
