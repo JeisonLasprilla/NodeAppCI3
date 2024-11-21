@@ -5,7 +5,7 @@ export interface IUser extends Document {
     name: string;
     email: string;
     password: string;
-    role: 'user' | 'regular' | 'superadmin';
+    role: 'regular' | 'superadmin';
     comments?: mongoose.Types.ObjectId[];
     createdAt: Date;
     updatedAt: Date;
@@ -43,8 +43,8 @@ const UserSchema = new Schema({
     },
     role: {
         type: String,
-        enum: ['user', 'admin', 'superadmin'],
-        default: 'user'
+        enum: ['regular', 'superadmin'],
+        default: 'regular'
     },
     comments: [{
         type: Schema.Types.ObjectId,

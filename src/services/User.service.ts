@@ -20,7 +20,11 @@ class UserService {
         throw new UserExistError("user already exists");
       }
 
-      const user = await User.create(UserInput);
+      const userInput = {
+        ...UserInput,
+        role: (UserInput.role || 'regular').toLowerCase()
+      };
+      const user = await User.create(userInput);
       console.log('3. Usuario creado:', {
         email: user.email,
         hasPassword: !!user.password,

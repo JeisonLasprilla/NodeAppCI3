@@ -3,7 +3,7 @@ import jwt, { TokenExpiredError } from "jsonwebtoken";
 
 interface DecodedToken {
   user_id: string;
-  role: 'superadmin' | 'regular';
+  role: 'regular' | 'superadmin';
 }
 
 declare global {

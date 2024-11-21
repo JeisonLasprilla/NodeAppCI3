@@ -9,13 +9,17 @@ import UserService from './services/User.service';
 import CommentService from './services/Comment.service';
 import ReactionService from './services/Reaction.service';
 import createContext from './graphql/context';
+import { makeExecutableSchema } from '@graphql-tools/schema';
+import { authDirectiveTransformer } from './graphql/directives/auth.directive';
 
 const pubsub = new PubSub();
 
 export const createApolloServer = async () => {
+  let schema = makeExecutableSchema({ typeDefs, resolvers });
+  schema = authDirectiveTransformer(schema);
+
   const server = new ApolloServer<Context>({
-    typeDefs,
-    resolvers
+    schema
   });
 
   await server.start();
