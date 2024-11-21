@@ -25,4 +25,17 @@ export const userTypes = `#graphql
     token: String!
     user: User!
   }
+
+  input UpdateUserInput {
+    name: String
+    email: String
+    role: String
+  }
+
+  type Mutation {
+    register(input: CreateUserInput!): AuthPayload!
+    login(input: LoginInput!): AuthPayload!
+    deleteUser(id: ID!): Boolean!
+    updateUser(id: ID!, input: UpdateUserInput!): User
+  }
 `;

@@ -2,7 +2,7 @@ import Reaction, { IReaction, ReactionType } from '../models/Reaction';
 import Comment from '../models/Comment';
 import { GraphQLError } from 'graphql';
 
-export class ReactionService {
+export default new class ReactionService {
     async addReaction(userId: string, commentId: string, type: ReactionType): Promise<IReaction> {
         const existingReaction = await Reaction.findOne({ user: userId, comment: commentId });
         

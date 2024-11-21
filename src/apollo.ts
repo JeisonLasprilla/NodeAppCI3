@@ -5,23 +5,31 @@ import { resolvers } from './graphql/resolvers';
 import { Context } from './graphql/context';
 import { PubSub } from 'graphql-subscriptions';
 import auth from './middlewares/auth';
+import UserService from './services/User.service';
+import CommentService from './services/Comment.service';
+import ReactionService from './services/Reaction.service';
+import createContext from './graphql/context';
 
 const pubsub = new PubSub();
 
 export const createApolloServer = async () => {
   const server = new ApolloServer<Context>({
     typeDefs,
-    resolvers,
+    resolvers
   });
 
   await server.start();
 
   const middleware = expressMiddleware(server, {
     context: async ({ req }) => {
+      const baseContext = await createContext();
       try {
         if (req.headers.authorization) {
           await new Promise<void>((resolve, reject) => {
-            auth(req, {} as any, (error: any) => {
+            auth(req, {
+              status: () => ({ json: () => {} }),
+              json: () => {}
+            } as any, (error: any) => {
               if (error) reject(error);
               resolve();
             });
@@ -29,11 +37,23 @@ export const createApolloServer = async () => {
         }
         
         return {
+          ...baseContext,
           user: req.user,
-          pubsub
+          dataSources: {
+            userService: UserService,
+            commentService: CommentService,
+            reactionService: ReactionService
+          }
         };
       } catch (error) {
-        return { pubsub };
+        return {
+          ...baseContext,
+          dataSources: {
+            userService: UserService,
+            commentService: CommentService,
+            reactionService: ReactionService
+          }
+        };
       }
     }
   });

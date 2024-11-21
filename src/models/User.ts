@@ -5,10 +5,25 @@ export interface IUser extends Document {
     name: string;
     email: string;
     password: string;
-    role: 'user' | 'admin' | 'superadmin';
+    role: 'user' | 'regular' | 'superadmin';
     comments?: mongoose.Types.ObjectId[];
     createdAt: Date;
     updatedAt: Date;
+}
+
+export interface UserInput {
+    email: string;
+    password: string;
+    name: string;
+    role?: string;
+}
+
+export interface UserDocument extends Document {
+    email: string;
+    password: string;
+    name: string;
+    role: string;
+    // ... otros campos necesarios
 }
 
 const UserSchema = new Schema({
@@ -19,7 +34,8 @@ const UserSchema = new Schema({
     email: {
         type: String,
         required: true,
-        unique: true
+        unique: true,
+        lowercase: true
     },
     password: {
         type: String,
@@ -41,8 +57,12 @@ const UserSchema = new Schema({
 // Hash password before saving
 UserSchema.pre('save', async function(next) {
     if (!this.isModified('password')) return next();
-    this.password = await bcrypt.hash(this.password, 10);
-    next();
+    try {
+        this.password = await bcrypt.hash(this.password, 10);
+        next();
+    } catch (error) {
+        next(error as Error);
+    }
 });
 
 export default mongoose.model<IUser>('User', UserSchema);

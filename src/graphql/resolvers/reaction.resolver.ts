@@ -1,4 +1,4 @@
-import { ReactionService } from '../../services/Reaction.service';
+import ReactionService from '../../services/Reaction.service';
 import { GraphQLError } from 'graphql';
 import { Context } from '../context';
 import { PubSub } from 'graphql-subscriptions';
@@ -6,7 +6,7 @@ import { ReactionType } from '../../models/Reaction';
 import { withFilter } from 'graphql-subscriptions';
 
 const pubsub = new PubSub();
-const reactionService = new ReactionService();
+const reactionService = ReactionService;
 
 export const reactionResolvers = {
   Query: {

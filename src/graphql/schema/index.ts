@@ -43,4 +43,17 @@ export const typeDefs = `#graphql
     reactionAdded(commentId: ID!): Reaction!
     reactionRemoved(commentId: ID!): ReactionRemovedPayload!
   }
+
+  type Comment {
+    id: ID!
+    content: String!
+    author: User!
+    createdAt: String!
+    updatedAt: String
+    reactions: [Reaction]
+  }
+
+  input CommentInput {
+    content: String!
+  }
 `;

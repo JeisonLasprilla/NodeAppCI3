@@ -3,7 +3,7 @@ import mongoose, { Schema, Document } from 'mongoose';
 export interface IComment extends Document {
     content: string;
     author: mongoose.Types.ObjectId;
-    parentComment?: mongoose.Types.ObjectId;
+    parentComment?: string | null;
     replies?: mongoose.Types.ObjectId[];
     reactions: mongoose.Types.ObjectId[];
     createdAt: Date;
@@ -48,6 +48,18 @@ CommentSchema.pre('save', async function(next) {
         }
     }
     next();
+});
+
+CommentSchema.set('toJSON', {
+  transform: function(doc, ret) {
+    ret.id = ret._id.toString();
+    delete ret._id;
+    delete ret.__v;
+    if (ret.parentComment) {
+      ret.parentComment.id = ret.parentComment._id.toString();
+    }
+    return ret;
+  }
 });
 
 export default mongoose.model<IComment>('Comment', CommentSchema);
